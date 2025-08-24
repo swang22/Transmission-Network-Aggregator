@@ -27,8 +27,8 @@ The processed dataset contains **7,652 transmission edges** with:
 ### 1. Installation
 
 ```bash
-git clone https://github.com/yourusername/transmission-network-analysis.git
-cd transmission-network-analysis
+git clone https://github.com/swang22/Transmission-Network-Aggregator.git
+cd Transmission-Network-Aggregator
 pip install -r requirements.txt
 ```
 
