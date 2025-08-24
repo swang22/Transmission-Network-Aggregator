@@ -201,12 +201,6 @@ The original dataset was developed to support research in:
 - US Census Bureau for county shapefiles
 - Python geospatial community (GeoPandas, Shapely, etc.)
 
-## 📞 Contact
-
-- **Author**: [Your Name]
-- **Email**: [your.email@institution.edu]
-- **Institution**: [Your Institution]
-
 ---
 
 *For questions about the underlying grid dataset or methodology, please refer to the documentation or open an issue.*
