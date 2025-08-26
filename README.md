@@ -36,7 +36,7 @@ pip install -r requirements.txt
 
 This toolkit uses the **USA Test System** dataset from Zenodo:
 
-> **Xu, B., Dvorkin, Y., Kirschen, D. S., Silva-Monroy, C. A., & Watson, J. P. (2021).** 
+> **Xu, Yixing, et al. "US test system with high spatial and temporal resolution for renewable integration studies." 2020 IEEE Power & Energy Society General Meeting (PESGM). IEEE, 2020.** 
 > *A Synthetic Time-Variant U.S. Power Grid Data Set for the Evaluation of Variable Generation and Demand Response*. 
 > Zenodo. https://doi.org/10.5281/zenodo.4538590
 
