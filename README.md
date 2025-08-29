@@ -227,7 +227,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Original Dataset
 This work uses the **USA Test System** dataset:
-- **Xu, B., Dvorkin, Y., Kirschen, D. S., Silva-Monroy, C. A., & Watson, J. P. (2021).** *A Synthetic Time-Variant U.S. Power Grid Data Set for the Evaluation of Variable Generation and Demand Response*. Zenodo. https://doi.org/10.5281/zenodo.4538590
+- https://doi.org/10.5281/zenodo.4538590
 
 ### Software & Libraries
 - **MATPOWER** for the grid data format specification
