@@ -4,49 +4,45 @@ This folder contains unit tests for the transmission network analysis toolkit.
 
 ## Running Tests
 
-To run all tests:
+To run the basic tests:
+```bash
+python tests/test_basic.py
+```
+
+To run with pytest (if installed):
 ```bash
 python -m pytest tests/
 ```
 
-To run tests with coverage:
-```bash
-python -m pytest tests/ --cov=src --cov-report=html
-```
+## Current Test Structure
 
-## Test Structure
+### `test_basic.py`
+Basic functionality tests that work reliably in CI:
+- `test_pandas_available()`: Verify pandas installation
+- `test_src_directory_exists()`: Check core module files exist  
+- `test_basic_python_functionality()`: Test basic data operations
 
-### `test_aggregation.py`
-Tests for core aggregation functions:
-- `test_build_bus_lookup()`: Bus-to-county mapping
-- `test_aggregate_ac()`: AC line aggregation
-- `test_aggregate_hvdc()`: HVDC line aggregation
-- `test_duplicate_handling()`: Duplicate column handling
+These tests are designed to be minimal, fast, and work without requiring full geospatial dependencies.
 
-### `test_visualization.py` 
-Tests for visualization functions:
-- `test_create_transmission_map()`: Map generation
-- `test_capacity_classes()`: Capacity classification
-- `test_regional_filtering()`: Geographic filtering
+## Future Test Development
 
-### `test_data_loading.py`
-Tests for data loading functions:
-- `test_load_grid_tables()`: MATPOWER data loading
-- `test_load_counties()`: Counties shapefile loading
-- `test_data_validation()`: Input data validation
+Additional test files can be added for:
+- **Aggregation functions**: Bus-to-county mapping, AC/HVDC aggregation
+- **Visualization functions**: Map generation, capacity classification
+- **Data loading**: MATPOWER and counties data loading
 
 ## Test Data
 
-Small test datasets are provided in `tests/data/`:
-- `test_bus.csv`: Sample bus data
-- `test_branch.csv`: Sample branch data  
-- `test_counties.geojson`: Sample county boundaries
+For comprehensive testing, small sample datasets could be added:
+- Sample bus/branch/substation data
+- Sample county boundaries
+- Expected output examples
 
 ## Coverage Goals
 
-- Core functions: 90%+ coverage
-- Edge cases: Handle missing data, invalid inputs
-- Integration: End-to-end pipeline testing
+- Core functions: Focus on critical path testing
+- Edge cases: Handle missing data, invalid inputs  
+- CI compatibility: Tests that work across environments
 
 ## Continuous Integration
 

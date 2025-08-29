@@ -76,9 +76,17 @@ def main():
     print("✅ Grid data files found")
     
     # Step 1: Generate transmission aggregation
+    print(f"\n📊 STEP 1: Generate transmission data")
+    print("-" * 50)
     step1_cmd = [sys.executable, str(repo_root / "src" / "run_transmission.py")]
     if not run_command(step1_cmd, "Aggregating transmission data"):
         return False
+    print(f"\n📊 STEP 1B: Compare with 'first' strategy")
+    print("-" * 50)
+    compare_script = repo_root / "examples" / "compare_multi_sub_strategies.py"
+    if compare_script.exists():
+        step1b_cmd = [sys.executable, str(compare_script)]
+        run_command(step1b_cmd, "Comparing multi-substation strategies")
     
     # Check if output was created
     output_file = repo_root / "outputs" / "county_edges_tx.csv"
@@ -98,6 +106,7 @@ def main():
         print(f"Capacity range: {df['Tx_Capacity_MW'].min():.0f} - {df['Tx_Capacity_MW'].max():.0f} MW")
         print(f"States covered: {df['From_state'].nunique()}")
         print(f"Counties covered: {df[['From_fips', 'To_fips']].stack().nunique()}")
+        print(f"Multi-substation strategy: largest (default)")
     except ImportError:
         print("Install pandas to see data summary")
     

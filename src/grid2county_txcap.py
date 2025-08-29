@@ -199,7 +199,31 @@ def unordered_pair(df: pd.DataFrame, a: str, b: str) -> pd.DataFrame:
     return pd.DataFrame(arr, columns=["fips_lo", "fips_hi"], index=df.index)
 
 
-def build_bus_lookup(bus: pd.DataFrame, bus2sub: pd.DataFrame, sub: pd.DataFrame, counties_gdf, zone: Optional[pd.DataFrame] = None) -> Tuple[pd.Series, pd.DataFrame]:
+def build_bus_lookup(bus: pd.DataFrame, bus2sub: pd.DataFrame, sub: pd.DataFrame, 
+                    counties_gdf, zone: Optional[pd.DataFrame] = None) -> Tuple[pd.Series, pd.DataFrame]:
+    """
+    Build lookup tables mapping buses to counties and geographic information.
+    
+    Parameters:
+    -----------
+    bus : pd.DataFrame
+        Bus data with electrical network information
+    bus2sub : pd.DataFrame  
+        Bus-to-substation mapping table
+    sub : pd.DataFrame
+        Substation data with lat/lon coordinates and capacity info
+    counties_gdf : gpd.GeoDataFrame
+        County boundary polygons
+    zone : pd.DataFrame, optional
+        Zone definitions for additional geographic mapping
+        
+    Returns:
+    --------
+    bus_to_fips : pd.Series
+        Mapping from bus_id to county FIPS codes
+    bus_local : pd.DataFrame
+        Enhanced bus data with geographic information
+    """
     # infer key columns
     subcol = next((c for c in ("sub_id", "sub", "subid") if c in bus2sub.columns), None)
     if subcol is None:
@@ -212,6 +236,23 @@ def build_bus_lookup(bus: pd.DataFrame, bus2sub: pd.DataFrame, sub: pd.DataFrame
         buscol = "bus"
     else:
         bus2sub_local = bus2sub
+
+    # Create bus to substation mapping
+    bus_sub_mapping = bus2sub_local[[buscol, subcol]].rename(columns={buscol: "bus_id", subcol: "sub_id"})
+    
+    # Check for buses connected to multiple substations (for informational purposes)
+    multi_sub_buses = bus_sub_mapping.groupby('bus_id').size()
+    multi_sub_count = (multi_sub_buses > 1).sum()
+    
+    if multi_sub_count > 0:
+        print(f"[build_bus_lookup] Found {multi_sub_count} buses connected to multiple substations.")
+        print(f"[build_bus_lookup] Using first substation for each bus (deterministic selection).")
+        # Keep first substation for each bus
+        bus_map = bus_sub_mapping.drop_duplicates(subset='bus_id', keep='first')
+    else:
+        print(f"[build_bus_lookup] No multi-substation buses found in dataset.")
+        # Direct mapping since no multi-substation cases exist
+        bus_map = bus_sub_mapping
 
     # sub lat/lon -> counties
     if gpd is None:
@@ -247,13 +288,6 @@ def build_bus_lookup(bus: pd.DataFrame, bus2sub: pd.DataFrame, sub: pd.DataFrame
         else:
             bus_local = bus_local.reset_index().rename(columns={"index": "bus_id"})
 
-    # prepare sub mapping without duplicate column names
-    bus_map = bus2sub_local[[buscol, subcol]].copy()
-    if buscol != "bus_id":
-        bus_map.rename(columns={buscol: "bus_id"}, inplace=True)
-    if subcol != "sub_id":
-        bus_map.rename(columns={subcol: "sub_id"}, inplace=True)
-    
     # merge on bus_id, using suffixes to handle any remaining duplicates
     bus_local = bus_local.merge(bus_map, on="bus_id", how="left", suffixes=("", "_from_bus2sub"))
     
