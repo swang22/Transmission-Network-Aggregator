@@ -24,7 +24,22 @@ def main():
     parser.add_argument('--keep-intracounty', action='store_true', help='Keep intra-county connections')
     parser.add_argument('--no-hvdc', action='store_true', help='Exclude HVDC lines')
     
+    # Voltage filtering options
+    parser.add_argument('--min-voltage', type=float, help='Minimum voltage level in kV (e.g., 138)')
+    parser.add_argument('--voltage-levels', nargs='+', type=float, 
+                       help='Specific voltage levels to include (e.g., 230 345 500)')
+    parser.add_argument('--transmission-only', action='store_true', 
+                       help='Include only transmission lines (≥138 kV)')
+    
     args = parser.parse_args()
+
+    # Set voltage filtering based on arguments
+    min_voltage_kv = args.min_voltage
+    voltage_levels = args.voltage_levels
+    
+    if args.transmission_only:
+        min_voltage_kv = 138  # Standard transmission threshold
+        print("Using transmission-only filter (≥138 kV)")
 
     # --- paths
     GRID_DIR = REPO_ROOT / "data" / "base_grid"    # where bus/branch/sub/bus2sub live
@@ -67,6 +82,8 @@ def main():
         pf_mode=PF_RULE,
         exclude_transformers=(not INCLUDE_TRANSFORMERS),
         keep_intracounty=KEEP_INTRACOUNTY,
+        min_voltage_kv=min_voltage_kv,
+        voltage_levels=voltage_levels,
     )
 
     if (not NO_HVDC) and (dcline is not None):

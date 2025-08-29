@@ -81,12 +81,7 @@ def main():
     step1_cmd = [sys.executable, str(repo_root / "src" / "run_transmission.py")]
     if not run_command(step1_cmd, "Aggregating transmission data"):
         return False
-    print(f"\n📊 STEP 1B: Compare with 'first' strategy")
-    print("-" * 50)
-    compare_script = repo_root / "examples" / "compare_multi_sub_strategies.py"
-    if compare_script.exists():
-        step1b_cmd = [sys.executable, str(compare_script)]
-        run_command(step1b_cmd, "Comparing multi-substation strategies")
+
     
     # Check if output was created
     output_file = repo_root / "outputs" / "county_edges_tx.csv"

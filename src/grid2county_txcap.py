@@ -362,7 +362,9 @@ def aggregate_ac(branch: pd.DataFrame,
                  rate_pref="a",
                  pf_mode="none",
                  exclude_transformers=True,
-                 keep_intracounty=False) -> pd.DataFrame:
+                 keep_intracounty=False,
+                 min_voltage_kv=None,
+                 voltage_levels=None) -> pd.DataFrame:
     br = branch.copy()
 
     # in-service
@@ -404,8 +406,61 @@ def aggregate_ac(branch: pd.DataFrame,
     br = br.merge(bmeta.rename(columns={"bus_id": "tbus", "fips": "fips_d", "cname": "cname_d", "sfp": "sfp_d", "zid": "zone_d", "zname": "zname_d", "interconn": "interconn_d"}),
                   on="tbus", how="left")
     br = br.dropna(subset=["fips_o", "fips_d"]).copy()
+    
+    print(f"[aggregate_ac] Starting with {len(br):,} branches")
+    
+    # Voltage filtering - BEFORE other filtering to avoid capacity inflation
+    if min_voltage_kv is not None or voltage_levels is not None:
+        original_count = len(br)
+        
+        # Check if voltage data is available
+        voltage_col = None
+        for col_name in ["baseKV", "basekv", "base_kv", "voltage_kv", "kv", "voltage"]:
+            if col_name in br.columns:
+                voltage_col = col_name
+                break
+        
+        # Try to get voltage from bus data if not in branch data
+        if voltage_col is None:
+            # Merge voltage info from buses (use from_bus voltage)
+            if "baseKV" in bus_local.columns:
+                bus_voltage = bus_local[["bus_id", "baseKV"]].rename(columns={"baseKV": "voltage_kv"})
+                br = br.merge(bus_voltage, left_on="fbus", right_on="bus_id", 
+                            how="left", suffixes=("", "_voltage"))
+                voltage_col = "voltage_kv"
+            elif "basekv" in bus_local.columns:
+                bus_voltage = bus_local[["bus_id", "basekv"]].rename(columns={"basekv": "voltage_kv"})
+                br = br.merge(bus_voltage, left_on="fbus", right_on="bus_id", 
+                            how="left", suffixes=("", "_voltage"))
+                voltage_col = "voltage_kv"
+            elif "base_kv" in bus_local.columns:
+                bus_voltage = bus_local[["bus_id", "base_kv"]].rename(columns={"base_kv": "voltage_kv"})
+                br = br.merge(bus_voltage, left_on="fbus", right_on="bus_id", 
+                            how="left", suffixes=("", "_voltage"))
+                voltage_col = "voltage_kv"
+        
+        if voltage_col is not None:
+            if min_voltage_kv is not None:
+                br = br[br[voltage_col] >= min_voltage_kv]
+                print(f"[aggregate_ac] Voltage filter (>={min_voltage_kv} kV): {original_count:,} -> {len(br):,} branches")
+            
+            if voltage_levels is not None:
+                br = br[br[voltage_col].isin(voltage_levels)]
+                print(f"[aggregate_ac] Voltage levels {voltage_levels}: {original_count:,} -> {len(br):,} branches")
+            
+            # Show voltage level distribution
+            if len(br) > 0:
+                voltage_dist = br[voltage_col].value_counts().sort_index()
+                print(f"[aggregate_ac] Voltage level distribution:")
+                for kv, count in voltage_dist.items():
+                    print(f"  {kv:>6.0f} kV: {count:>6,} branches")
+        else:
+            print(f"[aggregate_ac] Warning: No voltage data found, skipping voltage filtering")
+    
     if not keep_intracounty:
+        original_count = len(br)
         br = br[br["fips_o"] != br["fips_d"]].copy()
+        print(f"[aggregate_ac] Inter-county only: {original_count:,} -> {len(br):,} branches")
 
     # normalize rate columns & pick rating
     for col in ("ratea", "rateb", "ratec"):

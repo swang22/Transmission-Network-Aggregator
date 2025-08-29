@@ -83,11 +83,54 @@ python src/visualize_transmission.py --region "CA" --type state --output outputs
 python src/visualize_transmission.py --region "Western" --type interconnect --output outputs/western.png
 ```
 
+### Advanced Filtering Options
+
+#### Voltage-Based Filtering
+```bash
+# Transmission-only analysis (≥138 kV) - RECOMMENDED
+python src/run_transmission.py --transmission-only
+
+# Custom voltage threshold
+python src/run_transmission.py --min-voltage 230
+
+# Specific voltage levels only
+python src/run_transmission.py --voltage-levels 345 500 765
+
+# Compare filtering impact
+python src/run_transmission.py --output outputs/all_voltages.csv
+python src/run_transmission.py --transmission-only --output outputs/transmission_only.csv
+```
+
+#### Analyze Your Dataset
+```bash
+# Understand voltage levels in your data
+python examples/voltage_analysis.py
+
+# Shows impact: transmission filtering removes ~33% of edges (distribution connections)
+# Result: 7,652 edges → 5,157 edges (cleaner bulk power transfer analysis)
+```
+
 ### 5. Run Examples
 
 ```bash
 python examples/generate_examples.py
 ```
+
+## ⚡ Voltage Filtering Impact
+
+The `--transmission-only` filter provides significant improvements for power systems analysis:
+
+| **Metric** | **All Voltages** | **Transmission (≥138 kV)** | **Improvement** |
+|------------|-------------------|----------------------------|-----------------|
+| **Branches processed** | 81,861 | 41,048 | 50% reduction |
+| **County-to-county edges** | 7,652 | 5,157 | 33% cleaner |
+| **Focus** | Mixed levels | Bulk power transfer | More accurate |
+
+**Why filter by voltage?**
+- Prevents capacity inflation from local distribution connections
+- Focuses on true transmission corridors between regions
+- Follows standard power systems definitions (138+ kV = transmission)
+- Eliminates noise from sub-transmission interconnections
 
 ## 🗺️ Visualization Examples
 
